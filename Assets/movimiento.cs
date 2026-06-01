@@ -6,8 +6,11 @@ using UnityEngine.UI; // Requerido para modificar el texto de la UI
 public class movimiento : MonoBehaviour
 {
     public float speed = 2.0f; 
+    public float sprintSpeed = 4.0f;
     public float jumpHeight = 1.5f; 
     public float gravity = -15f;
+    public float doubleTapThreshold = 0.25f;
+    public float sprintDuration = 0.75f;
 
     private CharacterController controller;
     private Vector3 playerVelocity;
@@ -15,6 +18,8 @@ public class movimiento : MonoBehaviour
     private Transform cam;
     private Camera mainCam; // Referencia al componente Camera
     private GameObject objetoCercano; // Objeto que está en el rango de alcance
+    private float lastForwardTapTime = -10f;
+    private float sprintTimer;
 
     [Header("UI e Interacción")]
     public GameObject uiInteractuar; // El texto de "Presiona E..."
@@ -55,6 +60,16 @@ public class movimiento : MonoBehaviour
         {
             horizontal = (Keyboard.current.dKey.isPressed ? 1f : 0f) - (Keyboard.current.aKey.isPressed ? 1f : 0f);
             vertical = (Keyboard.current.wKey.isPressed ? 1f : 0f) - (Keyboard.current.sKey.isPressed ? 1f : 0f);
+
+            if (Keyboard.current.wKey.wasPressedThisFrame)
+            {
+                if (Time.time - lastForwardTapTime <= doubleTapThreshold)
+                {
+                    sprintTimer = sprintDuration;
+                }
+
+                lastForwardTapTime = Time.time;
+            }
         }
 
         // --- Lógica de Interacción (Tecla E) ---
@@ -104,7 +119,22 @@ public class movimiento : MonoBehaviour
         if (move.magnitude > 1f) move.Normalize();
 
         // Aplicar movimiento
-        controller.Move(move * speed * Time.deltaTime);
+        float currentSpeed = speed;
+        bool isSprinting = (sprintTimer > 0f && vertical > 0f) || (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed);
+        if (isSprinting && vertical > 0f)
+        {
+            currentSpeed = sprintSpeed;
+            if (sprintTimer > 0f)
+            {
+                sprintTimer -= Time.deltaTime;
+            }
+        }
+        else
+        {
+            sprintTimer = 0f;
+        }
+
+        controller.Move(move * currentSpeed * Time.deltaTime);
 
         // Rotar al personaje hacia la dirección de movimiento
         if (move != Vector3.zero)
