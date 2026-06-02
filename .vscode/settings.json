@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "entrega final.slnx",
+    "dotnet.defaultSolution": "entrega-final-Animacion-3D.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }
