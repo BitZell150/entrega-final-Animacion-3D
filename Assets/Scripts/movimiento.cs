@@ -43,14 +43,31 @@ public class movimiento : MonoBehaviour
         {
             Debug.LogWarning("No se encontro Animator en el objeto del personaje. Los triggers de animacion no se ejecutaran.");
         }
-        mainCam = Camera.main;
-        cam = mainCam.transform;
+
+        // Buscamos la cámara principal en tiempo de ejecución
+        if (mainCam == null)
+            mainCam = Camera.main;
+
+        if (mainCam != null)
+        {
+            cam = mainCam.transform;
+            
+            // Si el VideoPlayer no fue asignado manualmente, lo buscamos en la cámara
+            if (videoPlayer == null)
+            {
+                videoPlayer = mainCam.GetComponent<VideoPlayer>();
+            }
+        }
+        else
+        {
+            Debug.LogError("No se encontró una Main Camera en la escena. Asegúrate de que tu cámara tenga el Tag 'MainCamera'.");
+        }
 
         // Ocultar el texto al empezar
         if (uiInteractuar != null)
             uiInteractuar.SetActive(false);
 
-        // El VideoPlayer se queda enabled, pero sin cámara asignada para que no renderice nada
+        // Si encontramos un VideoPlayer, nos aseguramos de que empiece limpio
         if (videoPlayer != null)
         {
             videoPlayer.targetCamera = null;
@@ -97,19 +114,31 @@ public class movimiento : MonoBehaviour
         bool backflipPressed = Keyboard.current != null && Keyboard.current.bKey.wasPressedThisFrame;
         bool warmupPressed = Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame;
 
-        if (jumpPressed)
+        // Detectamos si estamos en la animación de Backflip O si estamos transicionando hacia/desde ella
+        bool estaEnBackflip = false;
+        if (animator != null)
         {
-            Debug.Log("JUMP");
+            // También verificamos IsInTransition para evitar que el script tome el control antes de que termine de volver al Idle
+            estaEnBackflip = animator.GetCurrentAnimatorStateInfo(0).IsName("Backflip") || 
+                             animator.GetNextAnimatorStateInfo(0).IsName("Backflip") ||
+                             (animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).IsName("Idle"));
         }
 
-        if (backflipPressed)
+        // Solo permitimos activar el backflip si no estamos ya haciendo uno
+        if (backflipPressed && !estaEnBackflip)
         {
             Debug.Log("BACKFLIP");
+            animatorSpeed = 0f;
+        }
+        else if (estaEnBackflip)
+        {
             animatorSpeed = 0f;
         }
 
         if (animator != null)
         {
+            // Enviamos el valor directamente. 
+            // La suavidad ahora la controlará el "Transition Duration" que configuramos en el Animator.
             animator.SetFloat(SpeedHash, animatorSpeed);
 
             if (jumpPressed && isGrounded)
@@ -119,7 +148,7 @@ public class movimiento : MonoBehaviour
                 jumpTimer = jumpImpulseDelay;
             }
 
-            if (backflipPressed)
+            if (backflipPressed && !estaEnBackflip)
             {
                 animator.ResetTrigger(BackflipHash);
                 animator.SetTrigger(BackflipHash);
@@ -162,7 +191,7 @@ public class movimiento : MonoBehaviour
             }
             else
             {
-                Debug.LogError("¡ERROR! El slot 'Video Player' está vacío en el Inspector del personaje (" + gameObject.name + "). Arrastra la Main Camera ahí.");
+                Debug.LogError("¡ERROR! No se encontró un VideoPlayer. Asegúrate de que la Main Camera tenga un componente VideoPlayer.");
             }
 
             // Destruimos el objeto y limpiamos la UI
@@ -172,6 +201,9 @@ public class movimiento : MonoBehaviour
             if (uiInteractuar != null)
                 uiInteractuar.SetActive(false);
         }
+
+        // Si no hay cámara, no podemos calcular el movimiento relativo
+        if (cam == null) return;
 
         // --- Lógica de Movimiento Relativo a la Cámara ---
         Vector3 camForward = cam.forward;
@@ -183,8 +215,12 @@ public class movimiento : MonoBehaviour
         camForward.Normalize();
         camRight.Normalize();
 
+        // Si está haciendo el backflip, anulamos el input de movimiento para que no se deslice por el suelo
+        float moveVertical = estaEnBackflip ? 0f : vertical;
+        float moveHorizontal = estaEnBackflip ? 0f : horizontal;
+
         // Calculamos la dirección del movimiento multiplicando la entrada por la orientación de la cámara
-        Vector3 move = (camForward * vertical + camRight * horizontal);
+        Vector3 move = (camForward * moveVertical + camRight * moveHorizontal);
 
         if (move.magnitude > 1f) move.Normalize();
 
@@ -206,15 +242,19 @@ public class movimiento : MonoBehaviour
         controller.Move(move * currentSpeed * Time.deltaTime);
 
         // Rotar al personaje hacia la dirección de movimiento
-        if (move != Vector3.zero)
+        if (move != Vector3.zero && !estaEnBackflip)
         {
             Quaternion targetRotation = Quaternion.LookRotation(move);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
         }
 
         // --- Aplicar Gravedad ---
-        playerVelocity.y += gravity * Time.deltaTime;
-        controller.Move(playerVelocity * Time.deltaTime);
+        // Si estamos en Backflip, pausamos la gravedad para que la animación pueda elevarse si es necesario
+        if (!estaEnBackflip)
+        {
+            playerVelocity.y += gravity * Time.deltaTime;
+            controller.Move(playerVelocity * Time.deltaTime);
+        }
     }
 
     private void ActivarVideo()
