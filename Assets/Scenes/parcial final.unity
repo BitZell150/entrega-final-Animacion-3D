@@ -888,6 +888,10 @@ PrefabInstance:
       propertyPath: uiInteractuar
       value: 
       objectReference: {fileID: 1169739774}
+    - target: {fileID: 1512991355037554182, guid: 4e0e8bb656c07ba4996ea9e050f5837c, type: 3}
+      propertyPath: jumpImpulseDelay
+      value: 0.3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
