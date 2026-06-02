@@ -160,3 +160,4 @@ MonoBehaviour:
   gravity: -15.1
   uiInteractuar: {fileID: 0}
   videoPlayer: {fileID: 0}
+  backflipClip: {fileID: 7400000, guid: cd746646ba244ee4e95075cbc52c8b97, type: 3}

@@ -5,9 +5,10 @@ using UnityEngine.UI; // Requerido para modificar el texto de la UI
 
 public class movimiento : MonoBehaviour
 {
-    public float speed = 2.0f; 
+    public float speed = 2.0f;
     public float sprintSpeed = 4.0f;
-    public float jumpHeight = 1.5f; 
+    public float jumpHeight = 1.5f;
+    public float jumpImpulseDelay = 0.12f;
     public float gravity = -15f;
     public float doubleTapThreshold = 0.25f;
     public float sprintDuration = 0.75f;
@@ -15,11 +16,18 @@ public class movimiento : MonoBehaviour
     private CharacterController controller;
     private Vector3 playerVelocity;
     private bool isGrounded;
+    private Animator animator;
     private Transform cam;
     private Camera mainCam; // Referencia al componente Camera
     private GameObject objetoCercano; // Objeto que está en el rango de alcance
     private float lastForwardTapTime = -10f;
     private float sprintTimer;
+    private float jumpTimer = -1f;
+
+    private static readonly int SpeedHash = Animator.StringToHash("Speed");
+    private static readonly int JumpHash = Animator.StringToHash("Jump");
+    private static readonly int BackflipHash = Animator.StringToHash("Backflip");
+    private static readonly int WarmupHash = Animator.StringToHash("Warmup");
 
     [Header("UI e Interacción")]
     public GameObject uiInteractuar; // El texto de "Presiona E..."
@@ -30,6 +38,11 @@ public class movimiento : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogWarning("No se encontro Animator en el objeto del personaje. Los triggers de animacion no se ejecutaran.");
+        }
         mainCam = Camera.main;
         cam = mainCam.transform;
 
@@ -43,7 +56,7 @@ public class movimiento : MonoBehaviour
             videoPlayer.targetCamera = null;
         }
     }
-    
+
     void Update()
     {
         // --- Lógica de Suelo ---
@@ -72,6 +85,63 @@ public class movimiento : MonoBehaviour
             }
         }
 
+        // --- Integración con Animator ---
+        float animatorSpeed = 0f;
+        bool isSprinting = (sprintTimer > 0f && vertical > 0f) || (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed);
+        if (horizontal != 0f || vertical != 0f)
+        {
+            animatorSpeed = (isSprinting && vertical > 0f) ? 2f : 1f;
+        }
+
+        bool jumpPressed = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+        bool backflipPressed = Keyboard.current != null && Keyboard.current.bKey.wasPressedThisFrame;
+        bool warmupPressed = Keyboard.current != null && Keyboard.current.cKey.wasPressedThisFrame;
+
+        if (jumpPressed)
+        {
+            Debug.Log("JUMP");
+        }
+
+        if (backflipPressed)
+        {
+            Debug.Log("BACKFLIP");
+            animatorSpeed = 0f;
+        }
+
+        if (animator != null)
+        {
+            animator.SetFloat(SpeedHash, animatorSpeed);
+
+            if (jumpPressed && isGrounded)
+            {
+                animator.ResetTrigger(JumpHash);
+                animator.SetTrigger(JumpHash);
+                jumpTimer = jumpImpulseDelay;
+            }
+
+            if (backflipPressed)
+            {
+                animator.ResetTrigger(BackflipHash);
+                animator.SetTrigger(BackflipHash);
+            }
+
+            if (warmupPressed)
+            {
+                animator.ResetTrigger(WarmupHash);
+                animator.SetTrigger(WarmupHash);
+            }
+        }
+
+        if (jumpTimer >= 0f)
+        {
+            jumpTimer -= Time.deltaTime;
+            if (jumpTimer <= 0f && isGrounded)
+            {
+                playerVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                jumpTimer = -1f;
+            }
+        }
+
         // --- Lógica de Interacción (Tecla E) ---
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && objetoCercano != null)
         {
@@ -94,7 +164,7 @@ public class movimiento : MonoBehaviour
             {
                 Debug.LogError("¡ERROR! El slot 'Video Player' está vacío en el Inspector del personaje (" + gameObject.name + "). Arrastra la Main Camera ahí.");
             }
-            
+
             // Destruimos el objeto y limpiamos la UI
             Destroy(objetoCercano);
             objetoCercano = null;
@@ -115,12 +185,11 @@ public class movimiento : MonoBehaviour
 
         // Calculamos la dirección del movimiento multiplicando la entrada por la orientación de la cámara
         Vector3 move = (camForward * vertical + camRight * horizontal);
-        
+
         if (move.magnitude > 1f) move.Normalize();
 
         // Aplicar movimiento
         float currentSpeed = speed;
-        bool isSprinting = (sprintTimer > 0f && vertical > 0f) || (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed);
         if (isSprinting && vertical > 0f)
         {
             currentSpeed = sprintSpeed;
@@ -143,28 +212,22 @@ public class movimiento : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
         }
 
-        // --- Salto con Barra Espaciadora ---
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame && isGrounded)
-        {
-            playerVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        }
-
         // --- Aplicar Gravedad ---
         playerVelocity.y += gravity * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
     }
-    
+
     private void ActivarVideo()
     {
         if (videoPlayer != null)
         {
             // Desconectamos la cámara temporalmente para evitar frames estáticos
             videoPlayer.targetCamera = null;
-            
+
             // Limpiamos suscripciones previas por seguridad
             videoPlayer.prepareCompleted -= AlCompletarPreparacion;
             videoPlayer.prepareCompleted += AlCompletarPreparacion;
-            
+
             // Forzamos la preparación del motor de video
             videoPlayer.Stop();
             videoPlayer.Prepare();
@@ -180,7 +243,7 @@ public class movimiento : MonoBehaviour
 
         source.loopPointReached -= AlTerminarVideo;
         source.loopPointReached += AlTerminarVideo;
-        
+
         source.Play();
     }
 
