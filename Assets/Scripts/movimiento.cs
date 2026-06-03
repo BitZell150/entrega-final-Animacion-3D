@@ -284,7 +284,7 @@ public class movimiento : MonoBehaviour
         source.loopPointReached -= AlTerminarVideo;
         source.loopPointReached += AlTerminarVideo;
 
-        source.Play();
+        source.Play();  
     }
 
     private void AlTerminarVideo(VideoPlayer source)
