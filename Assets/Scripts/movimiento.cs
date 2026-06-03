@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using UnityEngine.InputSystem;
 using UnityEngine.Video;
 using UnityEngine.UI; // Requerido para modificar el texto de la UI
@@ -20,6 +21,7 @@ public class movimiento : MonoBehaviour
     private Transform cam;
     private Camera mainCam; // Referencia al componente Camera
     private GameObject objetoCercano; // Objeto que está en el rango de alcance
+    private bool reproduciendoCinematica = false;
     private float lastForwardTapTime = -10f;
     private float sprintTimer;
     private float jumpTimer = -1f;
@@ -76,6 +78,10 @@ public class movimiento : MonoBehaviour
 
     void Update()
     {
+        // Si estamos viendo una secuencia de fotos, no permitimos mover al personaje
+        if (reproduciendoCinematica)
+            return;
+
         // --- Lógica de Suelo ---
         isGrounded = controller.isGrounded;
         if (isGrounded && playerVelocity.y < 0)
@@ -174,24 +180,18 @@ public class movimiento : MonoBehaviour
         // --- Lógica de Interacción (Tecla E) ---
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && objetoCercano != null)
         {
-            // Primero verificamos que el VideoPlayer esté asignado para evitar el error
-            if (videoPlayer != null)
+            DatosObjeto datos = objetoCercano.GetComponent<DatosObjeto>();
+            if (datos != null && datos.miCinematica != null)
             {
-                // Intentamos obtener el video específico del objeto
-                DatosObjeto datos = objetoCercano.GetComponent<DatosObjeto>();
-                if (datos != null && datos.videoAsociado != null)
-                {
-                    videoPlayer.clip = datos.videoAsociado;
-                    ActivarVideo();
-                }
-                else
-                {
-                    ActivarVideo(); // Si no tiene video específico, usa el que ya está por defecto
-                }
+                reproduciendoCinematica = true;
+                ManejadorCinematicas.Instancia.Reproducir(datos.miCinematica, () => {
+                    reproduciendoCinematica = false;
+                    if (playerVelocity.y < 0) playerVelocity.y = -2f;
+                });
             }
-            else
+            else if (videoPlayer != null)
             {
-                Debug.LogError("¡ERROR! No se encontró un VideoPlayer. Asegúrate de que la Main Camera tenga un componente VideoPlayer.");
+                ActivarVideo();
             }
 
             // Destruimos el objeto y limpiamos la UI
