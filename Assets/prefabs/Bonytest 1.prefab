@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &212913002461924601
+--- !u!1001 &6194626638407242560
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -22,15 +22,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.3143
+      value: 0.54
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.32
+      value: 1.333
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 117.77
+      value: 116.68826
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -66,7 +66,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       propertyPath: m_Name
-      value: bonytest
+      value: Bonytest 1
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       propertyPath: m_TagString
@@ -78,26 +78,29 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7446520166275012377}
+      addedObject: {fileID: 5032275279597540452}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5665280925171249226}
+      addedObject: {fileID: 4538153308206905730}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1512991355037554182}
+      addedObject: {fileID: 5408891666051613794}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7463298189088743664}
   m_SourcePrefab: {fileID: 100100000, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
---- !u!1 &1023727713732735400 stripped
+--- !u!1 &6428560584066903569 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
-  m_PrefabInstance: {fileID: 212913002461924601}
+  m_PrefabInstance: {fileID: 6194626638407242560}
   m_PrefabAsset: {fileID: 0}
---- !u!54 &7446520166275012377
+--- !u!54 &5032275279597540452
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1023727713732735400}
+  m_GameObject: {fileID: 6428560584066903569}
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
@@ -118,13 +121,13 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!143 &5665280925171249226
+--- !u!143 &4538153308206905730
 CharacterController:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1023727713732735400}
+  m_GameObject: {fileID: 6428560584066903569}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -143,21 +146,46 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: -0.02, z: 0}
---- !u!114 &1512991355037554182
+--- !u!114 &5408891666051613794
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1023727713732735400}
+  m_GameObject: {fileID: 6428560584066903569}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 28ed36c641e921742b8383f2051a3a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::movimiento
   speed: 4
+  sprintSpeed: 4
   jumpHeight: 1.5
+  jumpImpulseDelay: 0.35
   gravity: -15.1
+  doubleTapThreshold: 0.25
+  sprintDuration: 0.75
   uiInteractuar: {fileID: 0}
   videoPlayer: {fileID: 0}
-  backflipClip: {fileID: 7400000, guid: cd746646ba244ee4e95075cbc52c8b97, type: 3}
+--- !u!95 &7463298189088743664
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6428560584066903569}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 521e56c537142e9409eff729edca3b8f, type: 3}
+  m_Controller: {fileID: 9100000, guid: 0761775d7fc9a6e41ae98dc53f6403b0, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
